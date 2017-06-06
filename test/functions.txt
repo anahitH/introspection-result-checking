@@ -1,0 +1,3 @@
+readKey
+encrypt
+decrypt

@@ -1,0 +1,7 @@
+build
+./*.swp
+src/*.swp
+test/.*swp
+test/*.ll
+test/*.bc
+
