@@ -32,31 +32,15 @@ std::string demangle(const std::string& mangled_name)
 void extract_function_name(std::string& full_name)
 {
     auto name_end = full_name.find_first_of("(");
-    assert(name_end != std::string::npos);
-    full_name = full_name.substr(0, name_end);
+    if (name_end != std::string::npos) {
+        full_name = full_name.substr(0, name_end);
+    }
 }
 
 }
 
-void SensitiveFunctionMarkPass::SensitiveFunctionInformation::add_sensitive_function(llvm::Function* F)
+void SensitiveFunctionInformation::collect_sensitive_functions(const std::string& file_name, llvm::Module& M)
 {
-    m_sensitive_functions.insert(F);
-}
-
-bool SensitiveFunctionMarkPass::SensitiveFunctionInformation::is_sensitive_function(llvm::Function* F) const
-{
-    return m_sensitive_functions.find(F) != m_sensitive_functions.end();
-}
-
-static llvm::cl::opt<std::string> InputFilename("sensitive-functions",
-                                                llvm::cl::desc("Specify input filename for Sensitive function mark pass"),
-                                                llvm::cl::value_desc("filename"));
-
-char SensitiveFunctionMarkPass::ID = 0;
-
-bool SensitiveFunctionMarkPass::runOnModule(llvm::Module& M)
-{
-    const std::string& file_name = InputFilename;
     std::ifstream functions_strm(file_name);
     std::string name;
     std::unordered_set<std::string> sensitive_function_names;
@@ -73,9 +57,36 @@ bool SensitiveFunctionMarkPass::runOnModule(llvm::Module& M)
         extract_function_name(demangled_name);
         if (sensitive_function_names.find(demangled_name) != sensitive_function_names.end()) {
             llvm::dbgs() << "Add sensitive function " << demangled_name << "\n";
-            m_sensitive_functions_info.add_sensitive_function(&F);
+            add_sensitive_function(&F);
         }
     }
+}
+
+void SensitiveFunctionInformation::add_sensitive_function(llvm::Function* F)
+{
+    m_sensitive_functions.insert(F);
+}
+
+bool SensitiveFunctionInformation::is_sensitive_function(llvm::Function* F) const
+{
+    return m_sensitive_functions.find(F) != m_sensitive_functions.end();
+}
+
+const SensitiveFunctionInformation::FunctionSet& SensitiveFunctionInformation::get_sensitive_functions() const
+{
+    return m_sensitive_functions;
+}
+
+static llvm::cl::opt<std::string> InputFilename("sensitive-functions",
+                                                llvm::cl::desc("Specify input filename for Sensitive function mark pass"),
+                                                llvm::cl::value_desc("filename"));
+
+char SensitiveFunctionMarkPass::ID = 0;
+
+bool SensitiveFunctionMarkPass::runOnModule(llvm::Module& M)
+{
+    m_sensitive_functions_info.collect_sensitive_functions(InputFilename, M);
+
     return false;
 }
 

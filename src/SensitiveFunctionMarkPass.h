@@ -1,3 +1,5 @@
+#pragma once
+
 #include "llvm/Pass.h"
 
 #include <unordered_set>
@@ -8,25 +10,29 @@ class Function;
 
 namespace result_checking {
 
-class SensitiveFunctionMarkPass : public llvm::ModulePass
+class SensitiveFunctionInformation
 {
 public:
-    class SensitiveFunctionInformation
-    {
-    public:
-        SensitiveFunctionInformation() = default;
-        SensitiveFunctionInformation(const SensitiveFunctionInformation&) = delete;
-        SensitiveFunctionInformation& operator =(const SensitiveFunctionInformation&) = delete;
+    using FunctionSet = std::unordered_set<llvm::Function*>;
 
-    public:
-        void add_sensitive_function(llvm::Function* F);
+public:
+    SensitiveFunctionInformation() = default;
+    SensitiveFunctionInformation(const SensitiveFunctionInformation&) = delete;
+    SensitiveFunctionInformation& operator =(const SensitiveFunctionInformation&) = delete;
 
-        bool is_sensitive_function(llvm::Function* F) const;
+public:
+    void collect_sensitive_functions(const std::string& file_name, llvm::Module& M);
 
-    private:
-        std::unordered_set<llvm::Function*> m_sensitive_functions;
-    }; // class SensitiveFunctionInformation
+    void add_sensitive_function(llvm::Function* F);
+    bool is_sensitive_function(llvm::Function* F) const;
+    const FunctionSet& get_sensitive_functions() const;
 
+private:
+    FunctionSet m_sensitive_functions;
+}; // class SensitiveFunctionInformation
+
+class SensitiveFunctionMarkPass : public llvm::ModulePass
+{
 public:
     static char ID;
 
@@ -39,7 +45,7 @@ public:
 public:
     bool runOnModule(llvm::Module& M) override;
 
-    const SensitiveFunctionInformation& get_sensitive_functions_inf() const
+    const SensitiveFunctionInformation& get_sensitive_functions_info() const
     {
         return m_sensitive_functions_info;
     }
