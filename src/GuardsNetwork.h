@@ -52,6 +52,7 @@ public:
         connectivity_level = con_level;
     }
 
+    bool is_empty() const;
     bool is_guard(llvm::Function* f) const;
     const GuardNode& get_guard_for(llvm::Function* f) const;
     GuardNode& get_guard_for(llvm::Function* f);

@@ -3,6 +3,7 @@ add_library(result-checking MODULE
     SensitiveFunctionMarkPass.cpp
     PassRegistration.cpp
     GuardsNetwork.cpp
+    GuardsInserter.cpp
     DotPrinter.cpp
 )
 

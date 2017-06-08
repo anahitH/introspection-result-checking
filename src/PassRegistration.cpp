@@ -5,6 +5,7 @@
 #include "SensitiveFunctionMarkPass.h"
 #include "FunctionDominanceTree.h"
 #include "GuardsNetwork.h"
+#include "GuardsInserter.h"
 
 namespace result_checking {
 
@@ -15,6 +16,7 @@ static void registerPathsAnalysisPass(const llvm::PassManagerBuilder &,
   PM.add(new FunctionDominanceTreePass());
   PM.add(new GuardNetworkCreatorPass());
   PM.add(new GuardNetworkCreatorPrinterPass());
+  PM.add(new GuardsInserterPass());
 }
 
 static llvm::RegisterStandardPasses RegisterMyPass(llvm::PassManagerBuilder::EP_EarlyAsPossible, registerPathsAnalysisPass);

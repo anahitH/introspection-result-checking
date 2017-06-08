@@ -103,6 +103,11 @@ llvm::Function* GuardNetwork::GuardNode::get_function() const
     return function;
 }
 
+bool GuardNetwork::is_empty() const
+{
+    return guard_functions.empty();
+}
+
 bool GuardNetwork::is_guard(llvm::Function* f) const
 {
     return guard_functions.find(f) != guard_functions.end();
@@ -131,11 +136,12 @@ void GuardNetwork::build(const FunctionSet& module_functions,
 {
     const auto& sensitive_functions = functions_info.get_sensitive_functions();
     for (const auto& sens_function : sensitive_functions) {
-        const auto& dominators = get_function_dominators(sens_function, dominance_tree);
+        auto dominators = get_function_dominators(sens_function, dominance_tree);
         const auto& dominator_guards = get_random_functions_from_list(dominators, connectivity_level);
         create_guards(dominator_guards, sens_function);
         auto remaining_guards_num = connectivity_level - dominator_guards.size();
         if (remaining_guards_num != 0) {
+            dominators.push_back(sens_function); // to filter itself too
             const auto& random_guards = get_random_functions_from_list(module_functions, remaining_guards_num, dominators);
             create_guards(random_guards, sens_function);
         }
