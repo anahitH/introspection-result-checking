@@ -1,0 +1,164 @@
+KLEE: KLEE: WATCHDOG: watching 195
+
+KLEE: NOTE: Using klee-uclibc : /home/sip/build/klee/Release+Asserts/lib/klee-uclibc.bca
+KLEE: NOTE: Using model: /home/sip/build/klee/Release+Asserts/lib/libkleeRuntimePOSIX.bca
+KLEE: output directory is "/tmp/tmpay7krdsb/klee-out-0"
+Using STP solver backend
+KLEE: WARNING: undefined reference to function: klee_posix_prefer_cex
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 44294848)
+KLEE: WARNING ONCE: calling __user_main with extra arguments.
+KLEE: ERROR: /home/sip/klee/calc.c:32: divide by zero
+KLEE: NOTE: now ignoring this error at this location
+KLEE: ERROR: /home/sip/klee/calc.c:31: divide by zero
+KLEE: NOTE: now ignoring this error at this location
+Invalid operand
+
+KLEE: done: total instructions = 5742
+KLEE: done: completed paths = 14
+KLEE: done: generated tests = 8
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000001.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 4
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '%'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000002.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 4
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '/'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000003.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '*'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 0
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000004.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '/'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 16843009
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000005.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '+'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 0
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000006.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '-'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 0
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000007.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '%'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 16843009
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: 0
+
+ktest file : '/tmp/tmpay7krdsb/klee-last/test000008.ktest'
+args       : ['/tmp/tmpay7krdsb/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'a'
+object    1: size: 4
+object    1: data: 0
+object    2: name: 'op'
+object    2: size: 1
+object    2: data: '\x00'
+object    3: name: 'b'
+object    3: size: 4
+object    3: data: 0
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: -1

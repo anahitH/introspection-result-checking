@@ -1,0 +1,50 @@
+KLEE: KLEE: WATCHDOG: watching 922
+
+KLEE: NOTE: Using klee-uclibc : /home/sip/build/klee/Release+Asserts/lib/klee-uclibc.bca
+KLEE: NOTE: Using model: /home/sip/build/klee/Release+Asserts/lib/libkleeRuntimePOSIX.bca
+KLEE: output directory is "/tmp/tmpztbkhtjx/klee-out-0"
+Using STP solver backend
+KLEE: WARNING: undefined reference to function: klee_posix_prefer_cex
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 58860672)
+KLEE: WARNING ONCE: calling __user_main with extra arguments.
+KLEE: ERROR: /home/sip/klee/calc.c:56: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location
+
+KLEE: done: total instructions = 9456
+KLEE: done: completed paths = 317
+KLEE: done: generated tests = 2
+
+ktest file : '/tmp/tmpztbkhtjx/klee-last/test000001.ktest'
+args       : ['/tmp/tmpztbkhtjx/prepared.bc']
+num objects: 5
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'macke_sizeof_macke_sizeof'
+object    1: size: 4
+object    1: data: 4
+object    2: name: 'macke_sizeof'
+object    2: size: 16
+object    2: data: '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+object    3: name: 's'
+object    3: size: 4
+object    3: data: 0
+object    4: name: 'macke_result'
+object    4: size: 4
+object    4: data: 0
+
+ktest file : '/tmp/tmpztbkhtjx/klee-last/test000002.ktest'
+args       : ['/tmp/tmpztbkhtjx/prepared.bc']
+num objects: 4
+object    0: name: 'model_version'
+object    0: size: 4
+object    0: data: 1
+object    1: name: 'macke_sizeof_macke_sizeof'
+object    1: size: 4
+object    1: data: 4
+object    2: name: 'macke_sizeof'
+object    2: size: 16
+object    2: data: '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+object    3: name: 's'
+object    3: size: 4
+object    3: data: 2147483647
