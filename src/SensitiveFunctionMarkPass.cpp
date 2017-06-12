@@ -1,5 +1,7 @@
 #include "SensitiveFunctionMarkPass.h"
 
+#include "Utils.h"
+
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Function.h"
 #include "llvm/Support/Debug.h"
@@ -9,35 +11,9 @@
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 
-#include <cxxabi.h>
 #include <fstream>
 
 namespace result_checking {
-
-namespace {
-
-std::string demangle(const std::string& mangled_name)
-{
-    int status = -1;
-    char* demangled = abi::__cxa_demangle(mangled_name.c_str(), NULL, NULL, &status);
-    if (status == 0) {
-        return std::string(demangled);
-    }
-    //else {
-    //    llvm::dbgs() << "Failed to demangle the name " << mangled_name << "\n";
-    //}
-    return std::string();
-}
-
-void extract_function_name(std::string& full_name)
-{
-    auto name_end = full_name.find_first_of("(");
-    if (name_end != std::string::npos) {
-        full_name = full_name.substr(0, name_end);
-    }
-}
-
-}
 
 void SensitiveFunctionInformation::collect_sensitive_functions(const std::string& file_name, llvm::Module& M)
 {
@@ -50,11 +26,11 @@ void SensitiveFunctionInformation::collect_sensitive_functions(const std::string
     }
 
     for (auto& F : M) {
-        auto demangled_name = demangle(F.getName());
+        auto demangled_name = NameUtilities::demangle(F.getName());
         if (demangled_name.empty()) {
             demangled_name = F.getName();
         }
-        extract_function_name(demangled_name);
+        NameUtilities::extract_function_name(demangled_name);
         if (sensitive_function_names.find(demangled_name) != sensitive_function_names.end()) {
             llvm::dbgs() << "Add sensitive function " << demangled_name << "\n";
             add_sensitive_function(&F);

@@ -2,6 +2,8 @@
 
 #include "GuardsNetwork.h"
 #include "SensitiveFunctionMarkPass.h"
+#include "FunctionsTestCaseManager.h"
+#include "Utils.h"
 
 #include "llvm/Analysis/LoopInfo.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
@@ -22,6 +24,25 @@
 namespace result_checking {
 
 namespace {
+
+
+void insert_call_for_testcase(llvm::Function* checkee, const FunctionTestCase::TestCaseType& test, llvm::IRBuilder<>& builder)
+{
+}
+
+void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>& builder)
+{
+    auto& test_case_manager = FunctionsTestCaseManager::get();
+    for (const auto& checkee : guard_node.get_checkees()) {
+        auto name = NameUtilities::demangle(checkee->getName());
+        NameUtilities::extract_function_name(name);
+        llvm::dbgs() << "Inserting check calls for " << name << "\n";
+        const auto& test_cases = test_case_manager.get_function_test_case(name).get_test_cases();
+        for (const auto& test : test_cases) {
+            insert_call_for_testcase(checkee, test, builder);
+        }
+    }
+}
 
 /*
 Non pure instrumented function will look like
@@ -57,6 +78,7 @@ void insert_guards(GuardNetwork::GuardNode& guard_node, llvm::DominatorTree* dom
 
     // get or create checker function
     if (!is_sensitive_function) {
+        insert_checkee_calls(guard_node, builder);
         //create call to sensitive function
         return;
         
@@ -124,6 +146,7 @@ bool GuardsInserterPass::runOnModule(llvm::Module& M)
     if (guards_network.is_empty()) {
         return false;
     }
+    FunctionsTestCaseManager::get().collect_test_cases();
     for (auto& F : M) {
         auto dom_tree = &getAnalysis<llvm::DominatorTreeWrapperPass>(F).getDomTree();
         auto loop_info = &getAnalysis<llvm::LoopInfoWrapperPass>(F).getLoopInfo();
