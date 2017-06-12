@@ -75,6 +75,9 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
     auto& test_case_manager = FunctionsTestCaseManager::get();
     for (const auto& checkee : guard_node.get_checkees()) {
         auto name = NameUtilities::demangle(checkee->getName());
+        if (name.empty()) {
+            name = checkee->getName();
+        } 
         NameUtilities::extract_function_name(name);
         llvm::dbgs() << "Inserting check calls for checkee: " << name << "\n";
         const auto& test_cases = test_case_manager.get_function_test_case(name).get_test_cases();

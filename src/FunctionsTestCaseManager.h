@@ -6,6 +6,7 @@
 #include "llvm/IR/Module.h"
 
 #include <unordered_map>
+#include <iostream>
 
 namespace result_checking {
 
@@ -61,12 +62,14 @@ public:
     const FunctionTestCase& get_function_test_case(const std::string& name) const
     {
         auto pos = function_test_cases.find(name);
+        std::cout << name << "\n";
         assert(pos != function_test_cases.end());
         return pos->second;
     }
 
 private:
     FunctionsTestCaseManager() = default;
+
 private:
     std::unordered_map<std::string, FunctionTestCase> function_test_cases;
     
