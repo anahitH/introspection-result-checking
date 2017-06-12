@@ -2,6 +2,8 @@
 
 #include "Python.h"
 #include "FunctionTestCase.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/Module.h"
 
 #include <unordered_map>
 
@@ -17,7 +19,7 @@ public:
     }
 
 public:
-    void collect_test_cases(llvm::Module& M)
+    void collect_test_cases(llvm::Module& M, const result_checking::SensitiveFunctionInformation& sensitive_function_info)
     {
 /*
         // get from python
@@ -34,8 +36,8 @@ public:
 
         function_test_cases.insert(std::make_pair(name, test_case));
 */
-        auto& sensitive_function_info = getAnalysis<SensitiveFunctionMarkPass>().get_sensitive_functions_info();
-        auto& id = M->getModuleIdentifier();
+//        auto& sensitive_function_info = getAnalysis<SensitiveFunctionMarkPass>().get_sensitive_functions_info();
+        auto& id = M.getModuleIdentifier();
 
         // Set PYTHONPATH TO working directory
         setenv("PYTHONPATH",".",1);
@@ -49,7 +51,7 @@ public:
         // For each function, filename
         for (auto& F : M) {
             if (sensitive_function_info.is_sensitive_function(&F)) {
-               function_test_cases.insert(std::make_pair(function, get_test_case(pyFunction, id + ".bc", F->getName())));
+               function_test_cases.insert(std::make_pair(F.getName(), get_test_case(pyFunction, id, F.getName())));
             }
         }
 
@@ -68,10 +70,10 @@ private:
 private:
     std::unordered_map<std::string, FunctionTestCase> function_test_cases;
     
-    FunctionTestCase get_test_case(PyObject* pyFunction, char* filename, char* function) {
+    FunctionTestCase get_test_case(PyObject* pyFunction, std::string filename, std::string function) {
         FunctionTestCase tcs(function);
 
-        PyObject* args = PyTuple_Pack(2, PyString_FromString(filename), PyString_FromString(function));
+        PyObject* args = PyTuple_Pack(2, PyString_FromString(filename.c_str()), PyString_FromString(function.c_str()));
 
         // Call Python function to create testcases
         PyObject* testCases = PyObject_CallObject(pyFunction, args);
@@ -96,7 +98,7 @@ private:
                         tc.push_back(std::move(val));
                     }
                     else {
-                        Vector<char> arr;
+                        std::vector<char> arr;
                         for (int k = 0; k < size; k++) {
                             arr.push_back(data[k]);
                         }

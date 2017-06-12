@@ -4,7 +4,7 @@ from subprocess import Popen, PIPE
 def generate_tests(filename, funcname):
   lines = []
 
-  proc = Popen(['python', 'print.py', filename], stdout=PIPE)
+  proc = Popen(['python3', 'syminputBC.py', funcname, filename + '.bc'], stdout=PIPE)
   lines = proc.communicate()[0].split('\n')
   #with open(filename, 'r') as f:
   #  lines = f.readlines()
