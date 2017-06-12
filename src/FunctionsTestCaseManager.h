@@ -37,11 +37,10 @@ public:
 
         function_test_cases.insert(std::make_pair(name, test_case));
 */
-//        auto& sensitive_function_info = getAnalysis<SensitiveFunctionMarkPass>().get_sensitive_functions_info();
         auto& id = M.getModuleIdentifier();
 
         // Set PYTHONPATH TO working directory
-        setenv("PYTHONPATH",".",1);
+        setenv("PYTHONPATH","..",1);
   
         Py_Initialize();
 
@@ -115,7 +114,6 @@ private:
 
         return tcs;
     }
-
   
 };
 
