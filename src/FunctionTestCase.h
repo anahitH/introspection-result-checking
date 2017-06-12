@@ -24,7 +24,7 @@ public:
     void add_test_case(const TestCaseType& test_case)
     {
         if (test_case_size < 0) {
-            test_case_size = test_cases.size();
+            test_case_size = test_case.size();
         } else {
             assert(test_case_size == test_case.size());
         }

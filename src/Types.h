@@ -100,7 +100,7 @@ public:
 public:
     llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
     {
-        return llvm::ConstantInt::get(llvm::Type::getInt64Ty(Ctx), value);
+        return llvm::ConstantInt::get(llvm::Type::getInt32Ty(Ctx), value);
     }
 
 private:
