@@ -16,7 +16,7 @@ class Module;
 namespace result_checking {
 
 class SensitiveFunctionInformation;
-class FunctionDominanceTree;
+//class FunctionDominanceTree;
 
 class GuardNetwork
 {
@@ -59,8 +59,8 @@ public:
     const std::unordered_map<llvm::Function*, GuardNode> get_guard_functions() const;
 
     void build(const FunctionSet& module_functions,
-               const SensitiveFunctionInformation& functions_info,
-               const FunctionDominanceTree& dominance_tree);
+               const SensitiveFunctionInformation& functions_info);
+               //const FunctionDominanceTree& dominance_tree);
 
 private:
     GuardNode& get_or_create_guard_for(llvm::Function* F);

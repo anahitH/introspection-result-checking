@@ -1,7 +1,7 @@
 #include "GuardsNetwork.h"
 
 #include "SensitiveFunctionMarkPass.h"
-#include "FunctionDominanceTree.h"
+//#include "FunctionDominanceTree.h"
 #include "DotPrinter.h"
 
 #include "llvm/IR/Function.h"
@@ -23,6 +23,7 @@ namespace {
 
 using Functions = GuardNetwork::Functions;
 
+/*
 Functions get_function_dominators(llvm::Function* function, const FunctionDominanceTree& dominator_tree)
 {
     Functions dominators;
@@ -47,7 +48,7 @@ Functions get_function_dominators(llvm::Function* function, const FunctionDomina
     }
     return dominators;
 }
-
+*/
 Functions get_random_functions_from_list(Functions function_list, unsigned connectivity_level)
 {
     Functions functions;
@@ -131,20 +132,22 @@ const std::unordered_map<llvm::Function*, GuardNetwork::GuardNode> GuardNetwork:
 }
 
 void GuardNetwork::build(const FunctionSet& module_functions,
-                         const SensitiveFunctionInformation& functions_info,
-                         const FunctionDominanceTree& dominance_tree)
+                         const SensitiveFunctionInformation& functions_info)
+                         //const FunctionDominanceTree& dominance_tree)
 {
     const auto& sensitive_functions = functions_info.get_sensitive_functions();
     for (const auto& sens_function : sensitive_functions) {
-        auto dominators = get_function_dominators(sens_function, dominance_tree);
-        const auto& dominator_guards = get_random_functions_from_list(dominators, connectivity_level);
-        create_guards(dominator_guards, sens_function);
-        auto remaining_guards_num = connectivity_level - dominator_guards.size();
-        if (remaining_guards_num != 0) {
-            dominators.push_back(sens_function); // to filter itself too
-            const auto& random_guards = get_random_functions_from_list(module_functions, remaining_guards_num, dominators);
+        //auto dominators = get_function_dominators(sens_function, dominance_tree);
+        //const auto& dominator_guards = get_random_functions_from_list(dominators, connectivity_level);
+        //create_guards(dominator_guards, sens_function);
+        //auto remaining_guards_num = connectivity_level - dominator_guards.size();
+        //if (remaining_guards_num != 0) {
+            //dominators.push_back(sens_function); // to filter itself too
+            Functions functions;
+            functions.push_back(sens_function);
+            const auto& random_guards = get_random_functions_from_list(module_functions, connectivity_level, functions);
             create_guards(random_guards, sens_function);
-        }
+        //}
     }
 }
 
@@ -172,13 +175,13 @@ void GuardNetworkCreatorPass::getAnalysisUsage(llvm::AnalysisUsage& AU) const
 {
     AU.setPreservesAll();
     AU.addRequired<SensitiveFunctionMarkPass>();
-    AU.addRequired<FunctionDominanceTreePass>();
+    //AU.addRequired<FunctionDominanceTreePass>();
 }
 
 bool GuardNetworkCreatorPass::runOnModule(llvm::Module& M)
 {
     const auto& sensitive_function_info = getAnalysis<SensitiveFunctionMarkPass>().get_sensitive_functions_info();
-    const auto& function_dom_info = getAnalysis<FunctionDominanceTreePass>().get_dominance_tree();
+    //const auto& function_dom_info = getAnalysis<FunctionDominanceTreePass>().get_dominance_tree();
     guard_network.set_connectivity_level(connectivity_level);
 
     //SensitiveFunctionInformation sensitive_function_info;
@@ -189,7 +192,7 @@ bool GuardNetworkCreatorPass::runOnModule(llvm::Module& M)
     std::for_each(module_function_list.begin(), module_function_list.end(),
                   [&module_functions] (const llvm::Function& f) { module_functions.insert(const_cast<llvm::Function*>(&f)); });
 
-    guard_network.build(module_functions, sensitive_function_info, function_dom_info);
+    guard_network.build(module_functions, sensitive_function_info);
     return false;
 }
 
