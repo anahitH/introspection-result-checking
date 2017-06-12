@@ -9,9 +9,8 @@ struct ByteArrAndSize {
   int size;
 };
 
-template<typename... Ts>
-vector<tuple<Ts...>> get_args(char* filename, char* function) {
-  vector<tuple<Ts...>> tcs;
+FunctionTestCase get_test_case(char* filename, char* function) {
+  FunctionTestCase tcs(function);
 
   // setup python function call
   PyObject* myModule = PyImport_Import(PyString_FromString("get_tc"));
@@ -24,27 +23,33 @@ vector<tuple<Ts...>> get_args(char* filename, char* function) {
   // For each testcase
   for (int i = 0; i < PyList_Size(testCases); i++) {
     PyObject* testCase = PyList_GetItem(testCases, i);
-    tcs.push_back(make_tuple());
+    FunctionTestCase::TestCaseType tc;
     // for each argument
     for (int j = 0; j < PyList_Size(testCase); j++) {
       PyObject* arg = PyList_GetItem(testCase, j);
       if (PyInt_Check(arg)) {
         long data = PyInt_AsLong(arg);
-        auto tc = tcs.back();
-        tcs.pop_back();
-        tcs.emplace_back(tuple_cat(tc, make_tuple(data)));
+        FunctionTestCase::ValueTy val(new IntValue(data));
+        tc.push_back(val);
       }
       else if (PyByteArray_Check(arg)) {
         char* data = PyByteArray_AsString(arg);
         int size = PyByteArray_Size(arg);
-        ByteArrAndSize s = ByteArrAndSize();
-        s.data = data;
-        s.size = size;
-        auto tc = tcs.back();
-        tcs.pop_back();
-        tcs.emplace_back(tuple_cat(tc, make_tuple(s)));
+        if (size == 1) {
+          FunctionTestCase::ValueTy val(new CharValue(data[0]));
+          tc.push_back(val);
+        }
+        else {
+          Vector<char> arr;
+          for (int k = 0; k < size; k++) {
+            arr.push_back(data[k]);
+          }
+          FunctionTestCase::ValueTy val(new ByteArrayValue(arr));
+          tc.push_back(val);
+        }
       }
     }
+    tcs.add_test_case(tc);
   }
 
   return tcs;
@@ -56,11 +61,11 @@ int main() {
   
   Py_Initialize();
   
-  get_args((char*) "out", (char*) "function");
-  get_args((char*) "out2", (char*) "function");
-  get_args((char*) "out3", (char*) "function");
-  get_args((char*) "out4", (char*) "function");
-  get_args((char*) "out5", (char*) "function");
+  get_test_case((char*) "out", (char*) "function");
+  get_test_case((char*) "out2", (char*) "function");
+  get_test_case((char*) "out3", (char*) "function");
+  get_test_case((char*) "out4", (char*) "function");
+  get_test_case((char*) "out5", (char*) "function");
   
   Py_Finalize();
 

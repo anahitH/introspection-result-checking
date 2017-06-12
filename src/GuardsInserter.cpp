@@ -216,7 +216,7 @@ bool GuardsInserterPass::runOnModule(llvm::Module& M)
     if (guards_network.is_empty()) {
         return false;
     }
-    FunctionsTestCaseManager::get().collect_test_cases();
+    FunctionsTestCaseManager::get().collect_test_cases(M);
     for (auto& F : M) {
         if (F.isDeclaration()) {
             continue;
