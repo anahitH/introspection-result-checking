@@ -9,11 +9,12 @@ add_library(result-checking MODULE
 
 # Use C++11 to compile our pass (i.e., supply -std=c++11).
 target_compile_features(result-checking PRIVATE cxx_range_for cxx_auto_type)
+target_link_libraries(result-checking ${PYTHON_LIBRARIES})
 
 # LLVM is (typically) built with no C++ RTTI. We need to match that;
 # otherwise, we'll get linker errors about missing RTTI data.
 set_target_properties(result-checking PROPERTIES
-    COMPILE_FLAGS "-fno-rtti -g "
-    #COMPILE_FLAGS "-fno-rtti -g -I/usr/include/python2.7 -lpython2.7"
+    #COMPILE_FLAGS "-fno-rtti -g "
+    COMPILE_FLAGS "-fno-rtti -g -fPIC -I/usr/include/python2.7 -lpython2.7"
 )
 
