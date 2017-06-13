@@ -85,11 +85,31 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
         for (const auto& test : test_cases) {
             assert(test.size() == checkee->getArgumentList().size() + 1);
             std::vector<llvm::Value*> arg_values;
-            llvm::Value* return_value = test[0]->to_llvm_value(Ctx);
+            llvm::Value* return_value;
+            if (checkee->getReturnType()->isPointerTy()) {
+                auto ret_ty = llvm::dyn_cast<llvm::PointerType>(checkee->getReturnType());
+                assert(ret_ty != nullptr);
+                auto element_ty = ret_ty->getElementType();
+                if (element_ty->isIntegerTy()) {
+                    auto int_type = llvm::dyn_cast<llvm::IntegerType>(element_ty);
+                    assert(int_type != nullptr);
+                    if (int_type->getBitWidth() == 32) {
+                        auto byte_array = reinterpret_cast<ByteArrayValue*>(test[0].get());
+                        assert(byte_array != nullptr);
+                        IntArrayValue int_array = (IntArrayValue) *byte_array;
+                        return_value = builder.CreateIntToPtr(int_array.to_llvm_value(Ctx), llvm::Type::getInt32PtrTy(Ctx));
+                    } else {
+                        return_value = builder.CreateIntToPtr(test[0]->to_llvm_value(Ctx), llvm::Type::getInt8PtrTy(Ctx));
+                    }
+                }
+            } else {
+                return_value = test[0]->to_llvm_value(Ctx);
+            }
             auto arg_iter = checkee->getArgumentList().begin();
             for (unsigned i = 1; i < test.size(); ++i) {
                 auto arg_type = arg_iter->getType();
                 if (arg_type->isPointerTy()) {
+                    assert(test[i]->is_byte_array());
                     auto ptr_type = llvm::dyn_cast<llvm::PointerType>(arg_type);
                     assert(ptr_type != nullptr);
                     auto element_ty = ptr_type->getElementType();
@@ -97,15 +117,21 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
                         auto int_type = llvm::dyn_cast<llvm::IntegerType>(element_ty);
                         assert(int_type != nullptr);
                         if (int_type->getBitWidth() == 32) {
-                            assert(test[i]->is_byte_array());
                             // dynamic cast is disabled with fno-rtti
                             auto byte_array = reinterpret_cast<ByteArrayValue*>(test[i].get());
                             assert(byte_array != nullptr);
                             IntArrayValue int_array = (IntArrayValue) *byte_array;
-                            arg_values.push_back(int_array.to_llvm_value(Ctx));
+                            auto int_to_ptr = builder.CreateIntToPtr(int_array.to_llvm_value(Ctx), llvm::Type::getInt32PtrTy(Ctx));
+                            arg_values.push_back(int_to_ptr);
                             ++arg_iter;
                             continue;
                         }
+                    } else {
+                        // for byte array
+                        auto int_to_ptr = builder.CreateIntToPtr(test[i]->to_llvm_value(Ctx), llvm::Type::getInt8PtrTy(Ctx));
+                        arg_values.push_back(int_to_ptr);
+                        ++arg_iter;
+                        continue;
                     }
                 }
                 arg_values.push_back(test[i]->to_llvm_value(Ctx));
