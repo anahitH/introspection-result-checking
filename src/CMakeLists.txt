@@ -15,7 +15,6 @@ target_link_libraries(result-checking ${PYTHON_LIBRARIES})
 # otherwise, we'll get linker errors about missing RTTI data.
 set_target_properties(result-checking PROPERTIES
     #COMPILE_FLAGS "-fno-rtti -g "
-    COMPILE_FLAGS "-fno-rtti -g -I/usr/include/python2.7 -lpython2.7"
-    #COMPILE_FLAGS "-fno-rtti -g -fPIC -I/usr/include/python2.7 -lpython2.7"
+    COMPILE_FLAGS "-fno-rtti -g -fPIC -I/usr/include/python2.7 -lpython2.7"
 )
 
