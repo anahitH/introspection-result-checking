@@ -100,6 +100,7 @@ public:
 public:
     llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
     {
+        printf("int: %d\n", value);
         return llvm::ConstantInt::get(llvm::Type::getInt32Ty(Ctx), value);
     }
 
@@ -119,6 +120,7 @@ public:
 public:
     llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
     {
+        printf("char: %d\n", value);
         return llvm::ConstantInt::get(llvm::Type::getInt8Ty(Ctx), value);
     }
 

@@ -4,27 +4,26 @@ from subprocess import Popen, PIPE
 def generate_tests(filename, funcname):
   lines = []
 
-  proc = Popen(['python3', 'syminputC.py', funcname, filename + '.c'], stdout=PIPE)
+  print filename, funcname
+  proc = Popen(['python3', 'syminputC.py', funcname, filename[:-3] + '.c'], stdout=PIPE)
   lines = proc.communicate()[0].split('\n')
-  #with open(filename, 'r') as f:
-  #  lines = f.readlines()
 
   i = 0
 
   # find number of TC
-  numCases = 0
+  '''numCases = 0
   numTestsStr = 'KLEE: done: generated tests ='
   for line in lines:
     i += 1
     ndx = line.find(numTestsStr)
     if ndx != -1:
       numCases = int(line[ndx + len(numTestsStr):].strip())
-      break
+      break'''
 
   numObjsStr = 'num objects:'
   testcases = []
-  for j in range(0, numCases):
-    #print '\nTest Case:', j + 1
+  #for j in range(0, numCases):
+  while len(lines) != 0:
     lines = lines[i:]
     i = 0
     # find number of obj for TC
@@ -35,6 +34,9 @@ def generate_tests(filename, funcname):
       if ndx != -1:
         numObjs = int(line[ndx+ + len(numObjsStr):].strip())
         break
+
+    if numObjs == 0:
+      break
 
     # generate_tests objects for TC
     dataStr = 'data: '
@@ -49,7 +51,6 @@ def generate_tests(filename, funcname):
       
       if re.compile(r"'macke_sizeof_.+'").search(name) != None or re.compile(r"'model_version'").search(name) != None and noVersion:
         noVersion = False
-        print name
         continue
 
       data = data[data.find(dataStr) + len(dataStr):].strip()
@@ -57,14 +58,13 @@ def generate_tests(filename, funcname):
 
       if data.lstrip('-').isdigit():
         data = int(data)
-        #print 'int:', data
+        print 'int:', data
       else:
         # Little endian Byte array
         data = data[1:-1].decode('string-escape')
         uni = data
-        #data = array.array('B', data)
         data = bytearray(data)
-        #print 'char or bytes', uni.encode('hex')
+        print 'char or bytes', uni.encode('hex')
 
 
       if name.find('macke_result') != -1:
@@ -76,7 +76,7 @@ def generate_tests(filename, funcname):
 
   return testcases
 
-#print generate_tests('out', 'a')
+print generate_tests('test.bc', 'readKey')
 #print generate_tests('out2', 'a')
 #print generate_tests('out3', 'a')
 #print generate_tests('out4', 'a')
