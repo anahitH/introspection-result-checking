@@ -67,11 +67,16 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
     std::string var_name = "result"; 
     llvm::GlobalVariable* result = new llvm::GlobalVariable(*guard->getParent(),
                                                             llvm::Type::getInt1Ty(Ctx),
-                                                            false,
+                                                            true,
                                                             llvm::GlobalValue::PrivateLinkage,
                                                             llvm::ConstantInt::getFalse(llvm::Type::getInt1Ty(Ctx)),
                                                             var_name.c_str());
  
+    llvm::ArrayRef<llvm::Type*> params{llvm::Type::getInt32Ty(Ctx)};
+    llvm::FunctionType* function_type = llvm::FunctionType::get(llvm::Type::getVoidTy(Ctx), params, false);
+    llvm::Constant *response_func = guard_node.get_function()->getParent()->getOrInsertFunction(
+            "response", function_type);
+
     auto& test_case_manager = FunctionsTestCaseManager::get();
     for (const auto& checkee : guard_node.get_checkees()) {
         auto name = NameUtilities::demangle(checkee->getName());
@@ -142,29 +147,26 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
             llvm::dbgs() << *call_value->getType() << "\n";
             llvm::dbgs() << *return_value->getType() << "\n";
             auto cmp_value = builder.CreateICmpEQ(call_value, return_value);
+            auto zext_cmp = builder.CreateZExt(cmp_value, llvm::Type::getInt32Ty(Ctx));
+	    llvm::ArrayRef<llvm::Value*> args_array{zext_cmp};
+	    builder.CreateCall(response_func, args_array);
 
-            auto load_result = builder.CreateLoad(result);
-            auto trunc_result = builder.CreateTrunc(load_result, llvm::Type::getInt1Ty(Ctx));
+            //auto load_result = builder.CreateLoad(result);
+            //auto trunc_result = builder.CreateTrunc(load_result, llvm::Type::getInt1Ty(Ctx));
             //auto zext_result = builder.CreateZExt(trunc_result, llvm::Type::getInt32Ty(Ctx));
             //auto zext_cmp = builder.CreateZExt(cmp_value, llvm::Type::getInt32Ty(Ctx));
-            auto and_res = builder.CreateAnd(trunc_result, cmp_value);
-            auto trunc_and = builder.CreateTrunc(and_res, llvm::Type::getInt1Ty(Ctx));
+            //auto and_res = builder.CreateAnd(trunc_result, cmp_value);
+            //auto trunc_and = builder.CreateTrunc(and_res, llvm::Type::getInt1Ty(Ctx));
             //auto zext_and = builder.CreateZExt(and_res, llvm::Type::getInt8Ty(Ctx));
-            builder.CreateStore(trunc_and, result);
+            //builder.CreateStore(trunc_and, result);
 
             //insert_call_for_testcase(guard_node.get_function(), result, checkee, test, builder);
         }
     }
 
-    auto load_result = builder.CreateLoad(result);
-    auto trunc_result = builder.CreateTrunc(load_result, llvm::Type::getInt1Ty(Ctx));
+    //auto load_result = builder.CreateLoad(result);
+    //auto trunc_result = builder.CreateTrunc(load_result, llvm::Type::getInt1Ty(Ctx));
 
-    llvm::ArrayRef<llvm::Type*> params{llvm::Type::getInt1Ty(Ctx)};
-    llvm::FunctionType* function_type = llvm::FunctionType::get(llvm::Type::getVoidTy(Ctx), params, false);
-    llvm::Constant *response_func = guard_node.get_function()->getParent()->getOrInsertFunction(
-            "response", function_type);
-    llvm::ArrayRef<llvm::Value*> args{trunc_result};
-    builder.CreateCall(response_func, args);
 }
 
 /*
