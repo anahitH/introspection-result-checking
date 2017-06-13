@@ -43,6 +43,7 @@ def generate_tests(filename, funcname):
     sizeStr = 'size: '
     case = []
     noVersion = True
+    has_result = False
     for k in range(0, numObjs):
       name = lines[i + k * 3]
       size = lines[i + k * 3 + 1]
@@ -68,17 +69,15 @@ def generate_tests(filename, funcname):
 
 
       if name.find('macke_result') != -1:
+        has_result = True
         case.insert(0, data)
       else:
         case.append(data)
-    testcases.append(case)
+    if has_result:
+      testcases.append(case)
 
 
   return testcases
 
-print generate_tests('test.bc', 'readKey')
-#print generate_tests('out2', 'a')
-#print generate_tests('out3', 'a')
-#print generate_tests('out4', 'a')
-#print generate_tests('out5', 'a')
-#print generate_tests('out6', 'a')
+if __name__ == '__main__':
+  print generate_tests('test.bc', 'readKey')
