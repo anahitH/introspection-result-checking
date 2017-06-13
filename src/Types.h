@@ -18,7 +18,8 @@ public:
     {
         INT,
         CHAR,
-        BYTE_ARRAY
+        BYTE_ARRAY,
+        INT_ARRAY
     };
 
 public:
@@ -40,6 +41,11 @@ public:
     bool is_byte_array() const
     {
         return m_type == BYTE_ARRAY;
+    }
+
+    bool is_int_array() const
+    {
+        return m_type == INT_ARRAY;
     }
 
 private:
@@ -128,6 +134,7 @@ private:
     char value;
 };
 
+class IntArrayValue;
 class ByteArrayValue : public Value
 {
 public:
@@ -138,27 +145,70 @@ public:
     }
 
 public:
-    std::vector<int> to_int_vector(const Byte_array& byte_array)
+    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
     {
-        return std::vector<int>();
+        char* data = const_cast<char*>(value.data());
+        int* int_data = reinterpret_cast<int*>(data);
+        return llvm::ConstantInt::get(llvm::Type::getInt8PtrTy(Ctx), *int_data);
     }
 
-    int* to_int_array(const Byte_array& byte_array)
+    // cast to int array value
+    operator IntArrayValue() const;
+
+private:
+    Byte_array value;
+};
+
+
+class IntArrayValue : public Value
+{
+public:
+    IntArrayValue(const Byte_array& array)
+        : Value(Type::INT_ARRAY)
     {
-        //TODO:
-        return nullptr;
+        to_int_array(array);
+    }
+
+    ~IntArrayValue()
+    {
+        delete[] value;
+        value = nullptr;
     }
 
 public:
     llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
     {
-        // TODO:
-        return nullptr;
+        return llvm::ConstantInt::get(llvm::Type::getInt32PtrTy(Ctx), *value);
     }
 
 private:
-    Byte_array value;
+    void to_int_array(const Byte_array& array)
+    {
+        static_assert(sizeof(int) == 4, "Expecting int to be 4 byte");
+        auto size = array.size();
+        if (size % 4 != 0) {
+            value = nullptr;
+            return;
+        }
+        int array_size = size / 4;
+        value = new int(array_size);
+        for (int i = 0, j = 0; i < size ;) {
+            int num = (array[i + 3] << 24) | (array[i + 2] << 16) | (array[i + 1] << 8) | array[i];
+            value[j] = num;
+            i += 4;
+            ++j;
+        }
+    }
+
+private:
+    int* value;
 };
+
+ByteArrayValue::operator IntArrayValue() const
+{
+    return IntArrayValue(value);
+}
+
 }
 
 

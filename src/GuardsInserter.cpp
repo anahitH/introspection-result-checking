@@ -81,12 +81,35 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
         NameUtilities::extract_function_name(name);
         llvm::dbgs() << "Inserting check calls for checkee: " << name << "\n";
         const auto& test_cases = test_case_manager.get_function_test_case(name).get_test_cases();
+        llvm::dbgs() << "Number of test cases: " << test_cases.size() << "\n";
         for (const auto& test : test_cases) {
             assert(test.size() == checkee->getArgumentList().size() + 1);
             std::vector<llvm::Value*> arg_values;
             llvm::Value* return_value = test[0]->to_llvm_value(Ctx);
+            auto arg_iter = checkee->getArgumentList().begin();
             for (unsigned i = 1; i < test.size(); ++i) {
+                auto arg_type = arg_iter->getType();
+                if (arg_type->isPointerTy()) {
+                    auto ptr_type = llvm::dyn_cast<llvm::PointerType>(arg_type);
+                    assert(ptr_type != nullptr);
+                    auto element_ty = ptr_type->getElementType();
+                    if (element_ty->isIntegerTy()) {
+                        auto int_type = llvm::dyn_cast<llvm::IntegerType>(element_ty);
+                        assert(int_type != nullptr);
+                        if (int_type->getBitWidth() == 32) {
+                            assert(test[i]->is_byte_array());
+                            // dynamic cast is disabled with fno-rtti
+                            auto byte_array = reinterpret_cast<ByteArrayValue*>(test[i].get());
+                            assert(byte_array != nullptr);
+                            IntArrayValue int_array = (IntArrayValue) *byte_array;
+                            arg_values.push_back(int_array.to_llvm_value(Ctx));
+                            ++arg_iter;
+                            continue;
+                        }
+                    }
+                }
                 arg_values.push_back(test[i]->to_llvm_value(Ctx));
+                ++arg_iter;
             }
             llvm::ArrayRef<llvm::Value*> args(arg_values);
             auto call_value = builder.CreateCall(checkee, args);
