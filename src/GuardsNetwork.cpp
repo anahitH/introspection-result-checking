@@ -186,11 +186,15 @@ bool GuardNetworkCreatorPass::runOnModule(llvm::Module& M)
 
     //SensitiveFunctionInformation sensitive_function_info;
     //sensitive_function_info.collect_sensitive_functions(InputFilename, M);
-
+    
     const auto& module_function_list = M.getFunctionList();
     GuardNetwork::FunctionSet module_functions;
     std::for_each(module_function_list.begin(), module_function_list.end(),
-                  [&module_functions] (const llvm::Function& f) { module_functions.insert(const_cast<llvm::Function*>(&f)); });
+                  [&module_functions] (const llvm::Function& f) { 
+                      if (!f.isDeclaration()) {
+                            module_functions.insert(const_cast<llvm::Function*>(&f));
+                      }
+                    });
 
     guard_network.build(module_functions, sensitive_function_info);
     return false;
