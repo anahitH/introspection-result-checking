@@ -5,7 +5,7 @@ def generate_tests(filename, funcname):
   lines = []
 
   print filename, funcname
-  proc = Popen(['python3', 'syminputC.py', funcname, filename[:-3] + '.c'], stdout=PIPE)
+  proc = Popen(['python3', 'syminputBC.py', funcname, filename[:-3] + '_3.5.bc'], stdout=PIPE)
   lines = proc.communicate()[0].split('\n')
 
   i = 0
