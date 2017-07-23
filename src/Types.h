@@ -87,7 +87,7 @@ public:
     }
 
 public:
-    virtual llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const = 0;
+    virtual llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx, unsigned width) const = 0;
 
 protected:
     Type type;
@@ -104,7 +104,7 @@ public:
     }
 
 public:
-    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
+    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx, unsigned width) const override
     {
         printf("int: %d\n", value);
         return llvm::ConstantInt::get(llvm::Type::getInt32Ty(Ctx), value);
@@ -124,7 +124,7 @@ public:
     }
 
 public:
-    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
+    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx, unsigned width) const override
     {
         printf("char: %d\n", value);
         return llvm::ConstantInt::get(llvm::Type::getInt8Ty(Ctx), value);
@@ -145,11 +145,19 @@ public:
     }
 
 public:
-    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
+    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx, unsigned width) const override
     {
         char* data = const_cast<char*>(value.data());
         int* int_data = reinterpret_cast<int*>(data);
-        return llvm::ConstantInt::get(llvm::Type::getInt8PtrTy(Ctx), *int_data);
+        // llvm::StringRef::StringRef(const char *data, size_t length);
+        printf("Bytestuff\n");
+        llvm::APInt ap(width, 0);
+        for (int n = value.size() - 1; n >= 0; n--) // value.size(); n++)
+          ap = (ap << 8) + ((unsigned char ) value.data()[n]);
+        return llvm::ConstantInt::get(llvm::IntegerType::get(Ctx, width), ap);
+    }
+    Byte_array* getVal() {
+        return &value;
     }
 
     // cast to int array value
@@ -176,7 +184,7 @@ public:
     }
 
 public:
-    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx) const override
+    llvm::Value* to_llvm_value(llvm::LLVMContext& Ctx, unsigned width) const override
     {
         return llvm::ConstantInt::get(llvm::Type::getInt32PtrTy(Ctx), *value);
     }

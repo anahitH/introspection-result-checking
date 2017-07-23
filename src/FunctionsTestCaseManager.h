@@ -40,7 +40,7 @@ public:
         auto& id = M.getModuleIdentifier();
 
         // Set PYTHONPATH TO working directory
-        setenv("PYTHONPATH","..",1);
+        setenv("PYTHONPATH",".",1);
   
         Py_Initialize();
 

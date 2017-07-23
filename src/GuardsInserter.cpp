@@ -36,6 +36,7 @@ namespace {
   result = result & (return_value == expected_return_value);
 
 */
+/*
 void insert_call_for_testcase(llvm::Function* guard, llvm::Value* result, llvm::Function* checkee,
                               const FunctionTestCase::TestCaseType& test, llvm::IRBuilder<>& builder)
 {
@@ -57,7 +58,7 @@ void insert_call_for_testcase(llvm::Function* guard, llvm::Value* result, llvm::
     auto trunc_result = builder.CreateTrunc(load_result, llvm::Type::getInt1Ty(Ctx));
     auto and_res = builder.CreateAnd(trunc_result, cmp_value);
     builder.CreateStore(and_res, result);
-}
+}*/
 
 void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>& builder)
 {
@@ -102,13 +103,13 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
                         auto byte_array = reinterpret_cast<ByteArrayValue*>(test[0].get());
                         assert(byte_array != nullptr);
                         IntArrayValue int_array = (IntArrayValue) *byte_array;
-                        return_value = builder.CreateIntToPtr(int_array.to_llvm_value(Ctx), llvm::Type::getInt32PtrTy(Ctx));
+                        return_value = builder.CreateIntToPtr(int_array.to_llvm_value(Ctx, 32), llvm::Type::getInt32PtrTy(Ctx));
                     } else {
-                        return_value = builder.CreateIntToPtr(test[0]->to_llvm_value(Ctx), llvm::Type::getInt8PtrTy(Ctx));
+                        return_value = builder.CreateIntToPtr(test[0]->to_llvm_value(Ctx, 8), llvm::Type::getInt8PtrTy(Ctx));
                     }
                 }
             } else {
-                return_value = test[0]->to_llvm_value(Ctx);
+                return_value = test[0]->to_llvm_value(Ctx, llvm::dyn_cast<llvm::IntegerType>(checkee->getReturnType())->getBitWidth());
             }
             auto arg_iter = checkee->getArgumentList().begin();
             for (unsigned i = 1; i < test.size(); ++i) {
@@ -119,6 +120,7 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
                     assert(ptr_type != nullptr);
                     auto element_ty = ptr_type->getElementType();
                     if (element_ty->isIntegerTy()) {
+                        llvm::dbgs() << "INT PTR\n";
                         auto int_type = llvm::dyn_cast<llvm::IntegerType>(element_ty);
                         assert(int_type != nullptr);
                         if (int_type->getBitWidth() == 32) {
@@ -126,21 +128,33 @@ void insert_checkee_calls(GuardNetwork::GuardNode& guard_node, llvm::IRBuilder<>
                             auto byte_array = reinterpret_cast<ByteArrayValue*>(test[i].get());
                             assert(byte_array != nullptr);
                             IntArrayValue int_array = (IntArrayValue) *byte_array;
-                            auto int_to_ptr = builder.CreateIntToPtr(int_array.to_llvm_value(Ctx), llvm::Type::getInt32PtrTy(Ctx));
+                            auto int_to_ptr = builder.CreateIntToPtr(int_array.to_llvm_value(Ctx, 32), llvm::Type::getInt32PtrTy(Ctx));
                             arg_values.push_back(int_to_ptr);
                             ++arg_iter;
                             continue;
                         }
+                        if (int_type->getBitWidth() == 8) {
+                            // Char *
+                            llvm::dbgs() << "CHAR*\n";
+                            auto arg = reinterpret_cast<ByteArrayValue*>(test[i].get());
+                            auto val = arg->getVal();
+                            arg_values.push_back(builder.CreateGlobalStringPtr(const_cast<char*>(val->data())));
+                            ++arg_iter;
+                            continue;
+                        }
                     } else {
+                        llvm::dbgs() << "NOT INT PTR\n";
                         // for byte array
-                        auto int_to_ptr = builder.CreateIntToPtr(test[i]->to_llvm_value(Ctx), llvm::Type::getInt8PtrTy(Ctx));
+                        auto int_to_ptr = builder.CreateIntToPtr(test[i]->to_llvm_value(Ctx, 8), llvm::Type::getInt8PtrTy(Ctx));
                         arg_values.push_back(int_to_ptr);
                         ++arg_iter;
                         continue;
                     }
                 }
-                arg_values.push_back(test[i]->to_llvm_value(Ctx));
-                ++arg_iter;
+                else if (arg_type->isIntegerTy()) {
+                    arg_values.push_back(test[i]->to_llvm_value(Ctx, llvm::dyn_cast<llvm::IntegerType>(arg_type)->getBitWidth()));
+                    ++arg_iter;
+                }
             }
             llvm::ArrayRef<llvm::Value*> args(arg_values);
             auto call_value = builder.CreateCall(checkee, args);

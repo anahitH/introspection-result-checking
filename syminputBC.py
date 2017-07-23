@@ -24,7 +24,7 @@ def run_KLEE(functionname, bcfile):
         print()
 
         # show the details of all test cases
-        run(["for ktest in "+ path.join(tmpdir, "klee-last") +"/*.ktest; do " + KTEST + " --write-ints $ktest; echo ""; done"], shell=True)
+        run(["for ktest in "+ path.join(tmpdir, "klee-last") +"/*.ktest; do " + KTEST + " $ktest; echo ""; done"], shell=True)
 
         # input("Press enter to delete " + tmpdir)
 
