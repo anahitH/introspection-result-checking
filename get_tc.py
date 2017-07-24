@@ -59,13 +59,13 @@ def generate_tests(filename, funcname):
 
       if data.lstrip('-').isdigit():
         data = int(data)
-        print 'int:', data
+        #print 'int:', data
       else:
         # Little endian Byte array
         data = data[1:-1].decode('string-escape')
         uni = data
         data = bytearray(data)
-        print 'char or bytes', uni.encode('hex')
+        #print 'char or bytes', uni.encode('hex')
 
 
       if name.find('macke_result') != -1:
@@ -75,6 +75,7 @@ def generate_tests(filename, funcname):
         case.append(data)
     if has_result:
       testcases.append(case)
+      print case
 
 
   return testcases

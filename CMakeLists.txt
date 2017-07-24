@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.1)
 #set(PYTHON_LIBRARIES /usr/lib/python2.7/)
 
 find_package(LLVM REQUIRED CONFIG)
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 add_definitions(${LLVM_DEFINITIONS})
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_LIST_DIR})
